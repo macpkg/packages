@@ -11,47 +11,48 @@ arch=('i686' 'x86_64')
 url='http://invisible-island.net/ncurses/ncurses.html'
 license=('MIT')
 depends=()
-provides=('libmenu.so' 'libpanel.so' 'libform.so' 'libncurses.so' 'libncurses++w.so'
-          'libformw.so' 'libmenuw.so' 'libpanelw.so' 'libncursesw.so')
+provides=('libmenu.dylib' 'libpanel.dylib' 'libform.dylib' 'libncurses.dylib' 'libncurses++w.dylib'
+          'libformw.dylib' 'libmenuw.dylib' 'libpanelw.dylib' 'libncursesw.dylib')
 source=(
         ftp://invisible-island.net/ncurses/ncurses-${pkgver/_/-}.tar.gz{,.asc}
         ftp://invisible-island.net/ncurses/5.9/patch-5.9-20141206.sh.gz{,.asc}
 )
 md5sums=('8cb9c412e5f2d96bc6f459aa8c6282a1'
          'SKIP'
-         'SKIP'
+         '170392a335809136d8fb6ba175ee1dba'
          'SKIP'
          )
 
 prepare() {
   mkdir ncurses{,w}-build
-}
-
-build() {
 
   cd ncurses-$pkgver
   chmod +x ../patch-5.9-20141206.sh
   ../patch-5.9-20141206.sh
   cd ../
+}
+
+build() {
 
   cd ncursesw-build
   ../$pkgname-${pkgver/_/-}/configure --prefix=/opt/macpkg --mandir=/opt/macpkg/share/man \
      --with-shared --with-normal --without-debug --without-ada \
-     --enable-widec --enable-pc-files --with-cxx-binding --with-cxx-shared
-  # add --enable-ext-colors and --enable-ext-mouse with next soname bump
+     --enable-widec --enable-pc-files --with-cxx-binding --with-cxx-shared \
+     --enable-ext-colors --enable-ext-mouse
   make
 
   # libraries for external binary support
   cd ${srcdir}/ncurses-build
   [[ $CARCH = "x86_64" ]] && CONFIGFLAG="--with-chtype=long"
   ../$pkgname-${pkgver/_/-}/configure --prefix=/opt/macpkg \
-    --with-shared --with-normal --without-debug --without-ada $CONFIGFLAG \
-    --with-cxx-binding --with-cxx-shared
+     --with-shared --with-normal --without-debug --without-ada $CONFIGFLAG \
+     --with-cxx-binding --with-cxx-shared
   make
 }
 
 package() {
   cd ncursesw-build
+  mkdir -p $pkgdir/opt/macpkg/lib/pkgconfig
   make DESTDIR="$pkgdir" install
 
   # fool packages looking to link to non-wide-character ncurses libraries
@@ -69,11 +70,14 @@ package() {
 
   # non-widec compatibility libraries
   cd "$srcdir"/ncurses-build
+  pkgver_=$pkgver
+  pkgver=5
   for lib in ncurses form panel menu; do
-    install -Dm755 lib/lib${lib}.so.${pkgver%_*} "$pkgdir"/opt/macpkg/lib/lib${lib}.so.${pkgver%_*}
-    ln -s lib${lib}.so.${pkgver%_*} "$pkgdir"/opt/macpkg/lib${lib}.so.5
+    install -Dm755 lib/lib${lib}.${pkgver%_*}.dylib "$pkgdir"/opt/macpkg/lib/lib${lib}.${pkgver%_*}.dylib
+    ln -s lib${lib}.${pkgver%_*}.dylib "$pkgdir"/opt/macpkg/lib${lib}.${pkgver%_*}.dylib
   done
 
+  pkgver=$pkgver_
   # install license, rip it from the readme
   cd "$srcdir"/$pkgname-${pkgver/_/-}
   install -dm755 "$pkgdir"/opt/macpkg/share/licenses/$pkgname
