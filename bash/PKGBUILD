@@ -13,7 +13,7 @@ arch=('i686' 'x86_64')
 license=('GPL')
 url='http://www.gnu.org/software/bash/bash.html'
 groups=('base')
-backup=(etc/bash.bash{rc,_logout} etc/skel/.bash{rc,_profile,_logout})
+backup=(opt/macpkg/etc/bash.bash{rc,_logout} opt/macpkg/etc/skel/.bash{rc,_profile,_logout})
 depends=('readline>=6.3')
 optdepends=('bash-completion: for tab completion')
 provides=('sh')
@@ -48,13 +48,13 @@ prepare() {
 build() {
   cd $pkgname-$_basever
 
-  _bashconfig=(-DDEFAULT_PATH_VALUE=\'\"/usr/local/sbin:/usr/local/bin:/usr/bin\"\'
-               -DSTANDARD_UTILS_PATH=\'\"/usr/bin\"\'
-               -DSYS_BASHRC=\'\"/etc/bash.bashrc\"\'
-               -DSYS_BASH_LOGOUT=\'\"/etc/bash.bash_logout\"\')
+  _bashconfig=(-DDEFAULT_PATH_VALUE=\'\"/opt/macpkg/bin:/usr/local/sbin:/usr/local/bin:/usr/bin\"\'
+               -DSTANDARD_UTILS_PATH=\'\"/opt/macpkg/bin:/usr/bin\"\'
+               -DSYS_BASHRC=\'\"/opt/macpkg/etc/bash.bashrc\"\'
+               -DSYS_BASH_LOGOUT=\'\"/opt/macpkg/etc/bash.bash_logout\"\')
   export CFLAGS="${CFLAGS} ${_bashconfig[@]}"
 
-  ./configure --prefix=/usr --with-curses --enable-readline \
+  ./configure --prefix=/opt/macpkg --with-curses --enable-readline \
     --without-bash-malloc --with-installed-readline
   make
 }
@@ -65,17 +65,17 @@ check() {
 
 package() {
   make -C $pkgname-$_basever DESTDIR="$pkgdir" install
-  ln -s bash "$pkgdir"/usr/bin/sh
+  ln -s bash "$pkgdir"/opt/macpkg/bin/sh
 
-  install -dm755 "$pkgdir"/etc/skel/
+  install -dm755 "$pkgdir"/opt/macpkg/etc/skel/
   # system-wide configuration files
-  install -m644 system.bashrc $pkgdir/etc/bash.bashrc
-  install -m644 system.bash_logout "$pkgdir"/etc/bash.bash_logout
+  install -m644 system.bashrc $pkgdir/opt/macpkg/etc/bash.bashrc
+  install -m644 system.bash_logout "$pkgdir"/opt/macpkg/etc/bash.bash_logout
 
   # user configuration file skeletons
-  install -m644 dot.bashrc "$pkgdir"/etc/skel/.bashrc
-  install -m644 dot.bash_profile "$pkgdir"/etc/skel/.bash_profile
-  install -m644 dot.bash_logout "$pkgdir"/etc/skel/.bash_logout
+  install -m644 dot.bashrc "$pkgdir"/opt/macpkg/etc/skel/.bashrc
+  install -m644 dot.bash_profile "$pkgdir"/opt/macpkg/etc/skel/.bash_profile
+  install -m644 dot.bash_logout "$pkgdir"/opt/macpkg/etc/skel/.bash_logout
 }
 
 md5sums=('81348932d5da294953e15d4814c74dd1'
