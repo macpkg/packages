@@ -1,0 +1,37 @@
+
+pkgname=asciidoc
+pkgver=8.6.9
+pkgrel=1
+pkgdesc='Text document format for short documents, articles, books and UNIX man pages.'
+arch=('x86_64')
+url='http://www.methods.co.nz/asciidoc/'
+license=('GPL')
+depends=()
+optdepends=('lilypond: music-filter'
+            'imagemagick: music-filter (used in conjunction with lilypond)'
+            'source-highlight: source-highlight-filter'
+            'dblatex: pdf generation'
+            'lynx: text generation'
+            'w3m: text generation (alternative to lynx)')
+source=("http://downloads.sourceforge.net/${pkgname}/${pkgname}-${pkgver}.tar.gz")
+md5sums=('c59018f105be8d022714b826b0be130a')
+
+build() {
+  cd ${pkgname}-${pkgver}
+
+  ./configure \
+    --prefix=/opt/macpkg \
+    --sysconfdir=/opt/macpkg/etc
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+
+  make install DESTDIR=${pkgdir}
+
+#  install -Dm644 asciidocapi.py \
+#    ${pkgdir}/usr/lib/python2.7/site-packages/asciidocapi.py
+
+  install -Dm644 vim/syntax/asciidoc.vim \
+    ${pkgdir}/opt/macpkg/share/vim/vimfiles/syntax/asciidoc.vim
+}
